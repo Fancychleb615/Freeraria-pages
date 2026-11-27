@@ -1,9 +1,55 @@
 <!DOCTYPE html>
+<html lang="en">
 <head>
-  <script>
-    console.log("hi");
-  </script>  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Freeraria – test build</title>
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-  
+  <canvas id="game"></canvas>
+
+  <div id="overlay">
+    <div class="panel">
+      <h1>Freeraria</h1>
+      <p class="sub">test build · 2-player prototype</p>
+
+      <label>Your name <input id="nameInput" maxlength="14" placeholder="Player"></label>
+      <label>World seed <input id="seedInput" placeholder="random (host / solo only)"></label>
+      <label>Room name <input id="roomInput" maxlength="20" placeholder="e.g. CAVE42"></label>
+
+      <div class="buttons">
+        <button id="btnCreate">Create Room</button>
+        <button id="btnJoin">Join Room</button>
+        <button id="btnSolo" class="solo">Solo Offline Test</button>
+      </div>
+      <p id="status"></p>
+      <p class="hint">A/D move · W/Space jump · 1–8 or wheel to pick · left-click use · right-click place · +/- zoom · R respawn</p>
+    </div>
+  </div>
+
+  <!-- Photon Realtime JS SDK (official npm build, served by jsDelivr).
+       That build is written for Node, so we give it a tiny module/require shim
+       and then point it at the browser's own WebSocket. -->
+  <script>
+    window.module = { exports: {} };
+    window.require = function (name) { return window.WebSocket; };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/photon-realtime@4.4.0/photon-realtime-module.js"></script>
+  <script>
+    if (window.module.exports && window.module.exports.LoadBalancing) {
+      window.Photon = window.module.exports;
+      window.Photon.PhotonPeer.setWebSocketImpl(window.WebSocket);
+    } else {
+      console.warn("[Freeraria] Photon SDK did not load. Online play is off; Solo still works.");
+      window.Photon = null;
+    }
+  </script>
+
+  <script src="./config.js"></script>
+  <script src="./assets.js"></script>
+  <script src="./worldGen.js"></script>
+  <script src="./network.js"></script>
+  <script src="./game.js"></script>
 </body>
+</html>
