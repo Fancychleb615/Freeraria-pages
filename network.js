@@ -27,6 +27,10 @@
     const cfg = window.PHOTON_CONFIG;
     const lbc = new LBC(P.ConnectionProtocol.Wss, cfg.APP_ID, cfg.APP_VERSION);
     lbc.setLogLevel && lbc.setLogLevel(P.LogLevel ? P.LogLevel.WARN : 2);
+    // Use the normal HTTPS port (443) instead of Photon's default 19093.
+    // Many school/work/public networks block 19093; connecting to the
+    // NameServer on 443 makes Photon hand out master/game servers on 443 too.
+    lbc.setNameServerAddress("wss://ns.photonengine.io:443");
 
     let pending = null;        // { mode: "create" | "join", room }
     let worldReceived = false;
@@ -83,7 +87,12 @@
 
     lbc.onError = function (code, msg) {
       console.warn("[Freeraria] Photon error", code, msg);
-      handlers.onStatus("Photon error " + code + ": " + msg);
+      let text = "Photon error " + code + ": " + msg;
+      if (code >= 1001 && code <= 3005) {
+        text += ". Your network, firewall, antivirus or a browser extension may be blocking the game. Try again, or try another network (e.g. phone hotspot).";
+      }
+      handlers.onStatus(text);
+      handlers.onFail && handlers.onFail(text);
     };
 
     lbc.onOperationResponse = function (errorCode, errorMsg, code) {
